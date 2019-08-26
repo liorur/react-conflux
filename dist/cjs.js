@@ -21,6 +21,77 @@ function _typeof(obj) {
   return _typeof(obj);
 }
 
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+    if (enumerableOnly) symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    });
+    keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+
+    if (i % 2) {
+      ownKeys(source, true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(source).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+  }
+
+  return target;
+}
+
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
 }
@@ -58,6 +129,61 @@ function _iterableToArrayLimit(arr, i) {
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
+
+var Store =
+/*#__PURE__*/
+function () {
+  function Store(initialState) {
+    _classCallCheck(this, Store);
+
+    _defineProperty(this, "internalState", void 0);
+
+    _defineProperty(this, "initialState", {});
+
+    _defineProperty(this, "dispatch", void 0);
+
+    this.initialState = initialState;
+  }
+
+  _createClass(Store, [{
+    key: "initialSetState",
+    value: function initialSetState(data) {
+      this.initialState = _objectSpread2({}, this.initialState, {}, data);
+    }
+  }, {
+    key: "setState",
+    value: function setState(data) {
+      if (this.dispatch) {
+        this.dispatch(data);
+      }
+
+      this.initialSetState(data);
+    }
+  }, {
+    key: "reducer",
+    value: function reducer(oldState, newState) {
+      return _objectSpread2({}, oldState, {}, newState);
+    }
+  }, {
+    key: "setReducerState",
+    value: function setReducerState(state) {
+      this.internalState = state;
+    }
+  }, {
+    key: "setDispatch",
+    value: function setDispatch(dispatch) {
+      this.dispatch = dispatch;
+      this.setState(this.initialState);
+    }
+  }, {
+    key: "state",
+    get: function get() {
+      return this.internalState || this.initialState;
+    }
+  }]);
+
+  return Store;
+}();
 
 function unwrapExports (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -1112,48 +1238,50 @@ var propTypes = createCommonjsModule(function (module) {
 }
 });
 
-/**
- * The useInitialState function only runs once on application load from the Conflux library. This
- * function returns initial state from the default case in the reducer function.
- *
- * @param {Function} reducer A reducer function that contains a switch statement and, ultimately,
- * returns a state object.
- *
- * @returns {Object} Will return the intialState object from default case in the invoked reducer.
- */
-var useInitialState = function useInitialState(reducer) {
-  /**
-   * getRandomString is used to create a randomized alpha-numeric string to create the action type
-   * for the initial reducer call. It is then prepended by "@conflux" which is a reserved phrase
-   * for action types in Conflux.
-   */
-  var getRandomString = Math.random().toString(36).substring(7);
-  /**
-   * The reducer function is invoked and passed no first parameter and an object for the second
-   * parameter.
-   *
-   * Parameter one is undefined as the reducer function should have a default parameter of
-   * initialState inside the application.
-   *
-   * Parameter two is an object with a key-value pair for an initialState retrieval using the
-   * getRandomString variable above appended to "@conflux" in a template literal string as
-   * shown below.
-   */
+var StoreProvider = function StoreProvider(_ref) {
+  var store = _ref.store,
+      context = _ref.context,
+      children = _ref.children;
 
-  return reducer(undefined, {
-    type: "@conflux".concat(getRandomString)
-  });
+  var _useReducer = React.useReducer(store.reducer, store.initialState),
+      _useReducer2 = _slicedToArray(_useReducer, 2),
+      state = _useReducer2[0],
+      dispatch = _useReducer2[1];
+
+  var _useMemo = React.useMemo(function () {
+    return [state, dispatch];
+  }, [state]),
+      _useMemo2 = _slicedToArray(_useMemo, 1),
+      memoaizedState = _useMemo2[0];
+
+  store.setReducerState(memoaizedState);
+  React.useLayoutEffect(function () {
+    store.setDispatch(dispatch);
+  }, []);
+  return React__default.createElement(context.Provider, {
+    value: [memoaizedState, store]
+  }, children);
+};
+
+StoreProvider.propTypes = {
+  store: propTypes.object.isRequired,
+  // eslint-disable-line react/forbid-prop-types
+  context: propTypes.object.isRequired,
+  // eslint-disable-line react/forbid-prop-types
+  children: propTypes.oneOfType([propTypes.element, propTypes.array]).isRequired
 };
 
 /**
  * The stateObjects provides persistent storage of state for as many initialState objects as
  * needed throughout the application.
  *
- * Every instantiation of StateProvider will add a new initialState object to stateObjects with
+ * Every instantiation of StoresProvider will add a new initialState object to stateObjects with
  * the key of the reducer name and the value of the state.
  */
 
-var stateObjects = {};
+var defaultStoreName = 'appStore';
+var userStores = {};
+var userContexts = {};
 /**
  * Create a Context.Provider wrapper for children components wherever it is applied to the
  * component tree. This component can be called multiple times throughout the application.
@@ -1173,34 +1301,27 @@ var stateObjects = {};
  * value as well as the children of the Context component.
  */
 
-var StateProvider = function StateProvider(_ref) {
-  var reducer = _ref.reducer,
-      stateContext = _ref.stateContext,
+var StoresProvider = function StoresProvider(_ref) {
+  var stores = _ref.stores,
       children = _ref.children;
 
   // Error messages for the reducer object
-  if (typeof reducer !== 'function') {
-    throw new Error('The reducer must be a function. You might have forgotten to pass your reducer into your StateProvider.');
-  } // Error messages for the stateContext object
+  if (stores instanceof Store) {
+    userStores[defaultStoreName] = stores;
+  } else if (stores instanceof Object) {
+    Object.keys(stores).forEach(function (storeName) {
+      if (stores[storeName] instanceof Store) {
+        userStores[storeName] = stores[storeName];
+      }
+    });
+  }
 
-
-  if (!stateContext) {
-    throw new Error('stateContext prop is undefined. Please check your createContext method and what you are passing into your StateProvider.');
+  if (Object.keys(userStores).length === 0) {
+    throw new Error('The stores prop must be a Store or an object with store names ans keys and Stores as values.');
   }
 
   if (children === undefined || _typeof(children) !== 'object' || !Object.keys(children).length) {
-    throw new Error('StateProvider must contain children components. You probably forgot to wrap it around your components in your JSX.');
-  }
-  /**
-   * This initial reducer call sets returns the initial state object from the reducer that will
-   * then be passed into useReducer.
-   *
-   *
-   */
-
-
-  if (stateObjects[reducer.name] === undefined) {
-    stateObjects[reducer.name] = useInitialState(reducer);
+    throw new Error('StoresProvider must contain children components. You probably forgot to wrap it around your components in your JSX.');
   }
   /**
    * Uses the useReducer hook to pass in a reducer and initialState. It returns
@@ -1208,93 +1329,32 @@ var StateProvider = function StateProvider(_ref) {
    */
 
 
-  var _useReducer = React.useReducer(reducer, stateObjects[reducer.name]),
-      _useReducer2 = _slicedToArray(_useReducer, 2),
-      state = _useReducer2[0],
-      dispatch = _useReducer2[1];
-  /**
-   * The useMemo hook returns state and dispatch while guarding against unnecessary rerendering of the component
-   * tree contained within this stateContext.Provider.
-   *
-   * It will only update when the state object in value changes, rather than any other state/props outside of
-   * these values.
-   */
-
-
-  var value = React.useMemo(function () {
-    return [state, dispatch];
-  }, [state]);
-  var Provider = stateContext.Provider;
-  /**
-   * The newly instantiated copy of Provider is returned as a component from this function
-   * to be wrapped around JSX in the application. The value returned from the useMemo hook (an array containing
-   * state and dispatch) is passed into the Provider per the requirements for the Context API
-   * in the documentation at: https://reactjs.org/docs/context.html
-   *
-   * This array will be available for destructuring inside components contained in the state tree with
-   * react-conflux's custom hook "useStateValue".
-   */
-
-  return React__default.createElement(Provider, {
-    value: value
-  }, children);
+  var wrappedChildren = children;
+  Object.keys(userStores).forEach(function (storeName) {
+    var store = userStores[storeName];
+    var Context = React.createContext({});
+    userContexts[storeName] = Context;
+    wrappedChildren = React__default.createElement(StoreProvider, {
+      store: store,
+      context: Context
+    }, wrappedChildren);
+  });
+  return wrappedChildren;
 };
 
-StateProvider.propTypes = {
-  reducer: propTypes.func.isRequired,
-  stateContext: propTypes.object.isRequired,
+StoresProvider.propTypes = {
+  stores: propTypes.object.isRequired,
   // eslint-disable-line react/forbid-prop-types
   children: propTypes.oneOfType([propTypes.element, propTypes.array]).isRequired
 };
-
-/**
- * The useStateValue custom hook from Conflux provides a modular, predictable, and easy
- * way to desctructure state and dispatch from the Context API's Consumer whenever needed.
- *
- * @param {Object} stateContext An object previously created using React's Context
- * API that contains a Provider and Consumer.
- *
- * @returns {context} Returns a validated context array containing a state object and a
- * dispatch function for use inside of a component.
- */
-
-var useStateValue = function useStateValue(stateContext) {
-  /**
-   * stateContext error messages for undefined and incorrect data types passed into
-   * useStateValue hook
-   */
-  if (stateContext === undefined) {
-    throw new Error('The stateContext object is undefined in your useStateValue hook. You probably forgot to pass the stateContext object into your useStateValue hook.');
+var useStore = function useStore(storeName) {
+  if (storeName) {
+    return React.useContext(userContexts[storeName]);
   }
 
-  if (!stateContext.Provider && !stateContext.Consumer) {
-    throw new Error('Incorrect argument passed to the useStateValue hook. You probably passed a variable other than your context object into it.');
-  }
-  /**
-   * The useContext React hook references the Context.Provider closest to it up the component
-   * tree. In Conflux, this will always return as an array which is [state, dispatch]. These
-   * are returned by the useStateValue hook for use inside the application.
-   */
-
-
-  var context = React.useContext(stateContext);
-  /**
-   * context error message for if context returns undefined. This happens when the stateContext
-   * passed into the useStateValue hook is used in a component which is not a child of that
-   * context's Provider.
-   */
-
-  if (context === undefined) {
-    throw new Error('The useStateValue hook must be used within the Provider of the Context object you have passed to it. Check to make sure you have passed in the correct context object and that the useStateValue hook is within a child of the correct Provider.');
-  }
-  /**
-   * Return the context of the Context.Provider closest to the useStateValue hook at the time
-   * it was called.
-   */
-
-
-  return context;
+  return React.useContext(userContexts[defaultStoreName]);
 };
 
-exports.StateProvider = StateProvider;
-exports.useStateValue = useStateValue;
+exports.Store = Store;
+exports.StoresProvider = StoresProvider;
+exports.useStore = useStore;
