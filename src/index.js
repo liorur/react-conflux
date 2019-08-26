@@ -1,4 +1,4 @@
-import StateProvider from './store';
-import { useStateValue } from './hooks';
+import Store from './store/Store';
+import StoresProvider, {useStore} from './store/StoresProvider';
 
-export { StateProvider, useStateValue };
+export {StoresProvider, useStore, Store};

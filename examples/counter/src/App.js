@@ -6,15 +6,11 @@ import { counterContext, titleContext } from './store/contexts';
 
 import Counter from './components/Counter';
 
-const App = () => {
+const App = ( ) => {
   return (
-<<<<<<< HEAD
     <StateProvider reducer={counterReducer} stateContext={counterContext}>
-=======
-    <StateProvider reducer={counterReducer} stateContext={CounterContext}>
->>>>>>> 47168b24b54fe2345407f93632ad141a85320156
       <StateProvider reducer={titleReducer} stateContext={titleContext}>
-        <Counter />
+        <Counter/>
       </StateProvider>
     </StateProvider>
   );

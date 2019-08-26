@@ -1,12 +1,12 @@
 import React from 'react';
-import { StateProvider } from '../../src';
-import { testReducer } from './reducers';
-import { testContext } from './contexts';
+import {StoresProvider} from '../../src';
+import {MyStore} from './MyStore';
 
-export const TestApp = ({ children }) => {
+export const TestApp = ({children}) => {
+  const myStore = new MyStore({text: 'Testing'});
   return (
-    <StateProvider reducer={testReducer} stateContext={testContext}>
+    <StoresProvider stores={myStore}>
       <div>{children}</div>
-    </StateProvider>
+    </StoresProvider>
   );
 };

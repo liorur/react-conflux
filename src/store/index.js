@@ -1,3 +1,3 @@
-import StateProvider from './StateProvider';
+import StoreProvider from './StoresProvider';
 
-export default StateProvider;
+export default StoreProvider;
