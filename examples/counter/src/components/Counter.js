@@ -1,18 +1,16 @@
 import React from 'react';
-import { useStateValue } from 'react-conflux';
-import { counterContext, titleContext } from '../store/contexts';
-import { INCREMENT, DECREMENT } from '../store/constants';
+import {useStore} from 'react-conflux';
 
 const Counter = () => {
-  const [counterState, counterDispatch] = useStateValue(counterContext);
-  const [titleState] = useStateValue(titleContext);
+  const [counterState, counterStore] = useStore('counterStore');
+  const [titleState] = useStore('titleStore');
   const increment = e => {
     e.preventDefault();
-    counterDispatch({ type: INCREMENT, payload: counterState.count + 1 });
+    counterStore.increment()
   };
   const decrement = e => {
     e.preventDefault();
-    counterDispatch({ type: DECREMENT, payload: counterState.count - 1 });
+    counterStore.decrement()
   };
   return (
     <div>

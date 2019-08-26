@@ -1,4 +1,4 @@
-// import { StateProvider, useStateValue } from "./src";
+// import { StoresProvider, useStore, Store } from "./src";
 
 if (process.env.NODE_ENV === 'production') {
   module.exports = require('./dist/cjs.min.js'); // eslint-disable-line
